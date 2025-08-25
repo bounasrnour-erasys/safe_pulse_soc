@@ -240,7 +240,7 @@ class _MiniBarChart extends StatelessWidget {
                   height: (values[i] / max) * 140 + 8,
                   margin: const EdgeInsets.symmetric(horizontal: 3),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.7),
+                    color: color.withValues(alpha: 0.7),
                     borderRadius: BorderRadius.circular(6),
                   ),
                 ),
