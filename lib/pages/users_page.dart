@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'user_detail_page.dart';
 
 class UsersPage extends StatelessWidget {
   const UsersPage({super.key});
@@ -25,6 +26,13 @@ class UsersPage extends StatelessWidget {
                   leading: CircleAvatar(child: Text('${index + 1}')),
                   title: Text(email),
                   subtitle: const Text('Role: Analyst • Status: Active'),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => UserDetailPage(email: email),
+                      ),
+                    );
+                  },
                   trailing: Wrap(
                     spacing: 8,
                     children: [
