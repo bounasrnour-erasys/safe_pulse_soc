@@ -14,13 +14,13 @@ class UsersPage extends StatelessWidget {
         children: [
           Text('Users', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700)),
           const SizedBox(height: 12),
-          Card(
-            child: ListView.separated(
-              shrinkWrap: true,
-              itemCount: items.length,
-              physics: const NeverScrollableScrollPhysics(),
-              separatorBuilder: (_, __) => const Divider(height: 1),
-              itemBuilder: (context, index) {
+          Expanded(
+            child: Card(
+              clipBehavior: Clip.antiAlias,
+              child: ListView.separated(
+                itemCount: items.length,
+                separatorBuilder: (_, __) => const Divider(height: 1),
+                itemBuilder: (context, index) {
                 final email = items[index];
                 return ListTile(
                   leading: CircleAvatar(child: Text('${index + 1}')),
@@ -43,6 +43,7 @@ class UsersPage extends StatelessWidget {
                 );
               },
             ),
+          ),
           ),
         ],
       ),
