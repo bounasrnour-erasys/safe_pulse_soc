@@ -154,11 +154,14 @@ class _DashboardPageState extends State<DashboardPage> {
                   Expanded(
                     flex: 3,
                     child: _ChartCard(
-                      title: 'Alerts by Severity',
-                      child: _BarPlaceholder(colors: [
-                        const Color(0xFFFF4D4F),
-                        const Color(0xFFFFA500),
-                        const Color(0xFF22C55E),
+                      title: 'Recent Incidents',
+                      child: _IncidentsList(items: const [
+                        MapEntry('P1 • Definite breach detected', 'Just now'),
+                        MapEntry('P2 • MFA failed for locked user', '5m ago'),
+                        MapEntry('P3 • Window switching detected', '28m ago'),
+                        MapEntry('P2 • Typing pattern anomaly', '1h ago'),
+                        MapEntry('P3 • Geo-IP variance > 300km', '2h ago'),
+                        MapEntry('P4 • Device posture warning', '4h ago'),
                       ]),
                     ),
                   ),
@@ -166,21 +169,94 @@ class _DashboardPageState extends State<DashboardPage> {
                   Expanded(
                     flex: 2,
                     child: _ChartCard(
-                      title: 'Top Sources',
+                      title: 'Active Alerts',
                       child: _ListPlaceholder(items: const [
-                        MapEntry('Firewall', '37'),
-                        MapEntry('Endpoint', '22'),
-                        MapEntry('Cloud WAF', '14'),
-                        MapEntry('SIEM', '9'),
+                        MapEntry('P1 • Critical', '3'),
+                        MapEntry('P2 • High', '7'),
+                        MapEntry('P3 • Medium', '12'),
+                        MapEntry('P4 • Low', '20'),
                       ]),
                     ),
                   ),
                 ],
               ),
+              const SizedBox(height: 16),
+              _ChartCard(
+                title: 'Quick actions',
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    FilledButton.icon(onPressed: () {}, icon: const Icon(Icons.refresh), label: const Text('Refresh data')),
+                    OutlinedButton.icon(onPressed: () {}, icon: const Icon(Icons.rule), label: const Text('Open triage queue')),
+                    OutlinedButton.icon(onPressed: () {}, icon: const Icon(Icons.person_search), label: const Text('Investigate user')),
+                    OutlinedButton.icon(onPressed: () {}, icon: const Icon(Icons.download), label: const Text('Export summary')),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              _ChartCard(
+                title: 'System health',
+                child: _StatusList(items: const [
+                  MapEntry('Ingestion pipeline', true),
+                  MapEntry('Authentication service', true),
+                  MapEntry('Rules engine', true),
+                  MapEntry('SIEM connector', false),
+                ]),
+              ),
             ],
           ),
         );
       },
+    );
+  }
+}
+
+class _IncidentsList extends StatelessWidget {
+  final List<MapEntry<String, String>> items;
+  const _IncidentsList({required this.items});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        for (final e in items)
+          ListTile(
+            dense: true,
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.bolt_rounded, size: 18, color: Colors.white70),
+            title: Text(e.key, maxLines: 1, overflow: TextOverflow.ellipsis),
+            trailing: Text(e.value, style: const TextStyle(color: Colors.white70)),
+          ),
+      ],
+    );
+  }
+}
+
+class _StatusList extends StatelessWidget {
+  final List<MapEntry<String, bool>> items;
+  const _StatusList({required this.items});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        for (final it in items)
+          ListTile(
+            dense: true,
+            contentPadding: EdgeInsets.zero,
+            leading: Icon(
+              it.value ? Icons.check_circle_rounded : Icons.error_rounded,
+              color: it.value ? const Color(0xFF22C55E) : const Color(0xFFFF4D4F),
+              size: 18,
+            ),
+            title: Text(it.key),
+            trailing: Text(
+              it.value ? 'Operational' : 'Degraded',
+              style: const TextStyle(color: Colors.white70),
+            ),
+          ),
+      ],
     );
   }
 }
@@ -261,40 +337,7 @@ class _ChartCard extends StatelessWidget {
     );
   }
 }
-
-class _BarPlaceholder extends StatelessWidget {
-  final List<Color> colors;
-  const _BarPlaceholder({required this.colors});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 220,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: List.generate(12, (i) {
-          final color = colors[i % colors.length];
-          final height = 40.0 + (i * 12) % 140;
-          return Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6.0),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 600),
-                curve: Curves.easeOut,
-                height: height,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.45),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: color.withValues(alpha: 0.6)),
-                ),
-              ),
-            ),
-          );
-        }),
-      ),
-    );
-  }
-}
+// removed unused _BarPlaceholder (replaced by incidents/alerts lists)
 
 class _ListPlaceholder extends StatelessWidget {
   final List<MapEntry<String, String>> items;
