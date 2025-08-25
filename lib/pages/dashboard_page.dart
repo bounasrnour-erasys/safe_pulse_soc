@@ -1,7 +1,52 @@
 import 'package:flutter/material.dart';
 
-class DashboardPage extends StatelessWidget {
+enum _QuickRange { today, last30, custom }
+
+class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
+
+  @override
+  State<DashboardPage> createState() => _DashboardPageState();
+}
+
+class _DashboardPageState extends State<DashboardPage> {
+  _QuickRange _quick = _QuickRange.today;
+  DateTimeRange? _range;
+
+  String get _rangeLabel {
+    if (_quick == _QuickRange.today) return 'Today';
+    if (_quick == _QuickRange.last30) return 'Last 30 days';
+    if (_range != null) {
+      final s = _range!.start.toLocal().toString().split(' ').first;
+      final e = _range!.end.toLocal().toString().split(' ').first;
+      return '$s → $e';
+    }
+    return 'Custom range';
+  }
+
+  Future<void> _pickRange() async {
+    final now = DateTime.now();
+    final first = DateTime(now.year - 1);
+    final last = DateTime(now.year + 1);
+    final picked = await showDateRangePicker(
+      context: context,
+      firstDate: first,
+      lastDate: last,
+      helpText: 'Select date range',
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) {
+      setState(() {
+        _quick = _QuickRange.custom;
+        _range = picked;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +58,7 @@ class DashboardPage extends StatelessWidget {
           columns = 4;
         } else if (width >= 1000) {
           columns = 3;
-        } else if (width >= 650) {
+        } else if (width >= 800) {
           columns = 2;
         }
 
@@ -22,14 +67,31 @@ class DashboardPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
-                  Text('Security Operations Center', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700)),
-                  const Spacer(),
-                  FilledButton.icon(
-                    onPressed: () {},
-                    icon: const Icon(Icons.add_alert),
-                    label: const Text('New Alert'),
+                  Text(
+                    'Erasys Security Operations Center (Overview)',
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(width: 12),
+                  const SizedBox(width: 24),
+                  ChoiceChip(
+                    label: const Text('Today'),
+                    selected: _quick == _QuickRange.today,
+                    onSelected: (_) => setState(() => _quick = _QuickRange.today),
+                  ),
+                  ChoiceChip(
+                    label: const Text('Last 30 days'),
+                    selected: _quick == _QuickRange.last30,
+                    onSelected: (_) => setState(() => _quick = _QuickRange.last30),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: _pickRange,
+                    icon: const Icon(Icons.date_range),
+                    label: Text(_rangeLabel),
                   ),
                 ],
               ),
@@ -41,10 +103,48 @@ class DashboardPage extends StatelessWidget {
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 children: const [
-                  _InfoTile(title: 'Incidents (24h)', value: '37', icon: Icons.shield_moon, color: Color(0xFF00D1FF)),
-                  _InfoTile(title: 'Active Alerts', value: '12', icon: Icons.warning_amber_rounded, color: Color(0xFFFFA500)),
-                  _InfoTile(title: 'Systems Monitored', value: '128', icon: Icons.devices_other, color: Color(0xFF7C4DFF)),
-                  _InfoTile(title: 'Uptime', value: '99.98%', icon: Icons.trending_up, color: Color(0xFF22C55E)),
+                  _InfoTile(
+                    title: 'Suspected Breaches',
+                    subtitle: 'Users with typing pattern < 90%',
+                    value: '24',
+                    icon: Icons.warning_amber_rounded,
+                    color: Color(0xFFFFA500),
+                  ),
+                  _InfoTile(
+                    title: 'Attempted Breaches',
+                    subtitle: 'Locked users attempted MFA',
+                    value: '17',
+                    icon: Icons.policy_rounded,
+                    color: Color(0xFFFFA500),
+                  ),
+                  _InfoTile(
+                    title: 'Anomalous Breach',
+                    subtitle: 'Window switching or IP change',
+                    value: '9',
+                    icon: Icons.change_circle_outlined,
+                    color: Color(0xFFFFA500),
+                  ),
+                  _InfoTile(
+                    title: 'Definite Breach',
+                    subtitle: 'Locked users failed MFA',
+                    value: '3',
+                    icon: Icons.dangerous_rounded,
+                    color: Color(0xFFFF4D4F),
+                  ),
+                  _InfoTile(
+                    title: 'No Breach',
+                    subtitle: 'Users without breach',
+                    value: '842',
+                    icon: Icons.verified_rounded,
+                    color: Color(0xFF22C55E),
+                  ),
+                  _InfoTile(
+                    title: 'Total Users',
+                    subtitle: 'Users in organization using SafePulse',
+                    value: '895',
+                    icon: Icons.group_rounded,
+                    color: Color(0xFF00D1FF),
+                  ),
                 ],
               ),
               const SizedBox(height: 16),
@@ -87,10 +187,11 @@ class DashboardPage extends StatelessWidget {
 
 class _InfoTile extends StatelessWidget {
   final String title;
+  final String subtitle;
   final String value;
   final IconData icon;
   final Color color;
-  const _InfoTile({required this.title, required this.value, required this.icon, required this.color});
+  const _InfoTile({required this.title, required this.subtitle, required this.value, required this.icon, required this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -124,12 +225,13 @@ class _InfoTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(color: Colors.white70)),
-                  const SizedBox(height: 6),
-                  Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
+                  Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 4),
+                  Text(subtitle, style: const TextStyle(color: Colors.white70, fontSize: 12)),
                 ],
               ),
             ),
+            Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
           ],
         ),
       ),
