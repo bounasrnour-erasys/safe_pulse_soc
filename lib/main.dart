@@ -5,6 +5,7 @@ import 'pages/users_page.dart';
 import 'pages/analytics_page.dart';
 import 'pages/settings_page.dart';
 import 'pages/logout_page.dart';
+import 'pages/login_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -20,7 +21,10 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'SafePulse SOC',
       theme: buildDarkTheme(),
-      home: const SocShell(),
+      home: const LoginPage(),
+      routes: {
+        '/dashboard': (_) => const SocShell(),
+      },
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'login_page.dart';
 
 class LogoutPage extends StatelessWidget {
   const LogoutPage({super.key});
@@ -19,9 +20,18 @@ class LogoutPage extends StatelessWidget {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  OutlinedButton(onPressed: () {}, child: const Text('Cancel')),
+                  OutlinedButton(onPressed: () => Navigator.of(context).maybePop(), child: const Text('Cancel')),
                   const SizedBox(width: 12),
-                  FilledButton.icon(onPressed: () {}, icon: const Icon(Icons.check), label: const Text('Confirm')),
+                  FilledButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(builder: (_) => const LoginPage()),
+                        (route) => false,
+                      );
+                    },
+                    icon: const Icon(Icons.check),
+                    label: const Text('Confirm'),
+                  ),
                 ],
               ),
             ],
