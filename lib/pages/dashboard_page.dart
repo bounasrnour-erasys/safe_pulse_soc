@@ -61,6 +61,9 @@ class _DashboardPageState extends State<DashboardPage> {
         } else if (width >= 800) {
           columns = 2;
         }
+        // Make KPI tiles reasonable height on small screens
+        final double tileAspect =
+            (columns >= 4) ? 3.6 : (columns == 3) ? 3.2 : (columns == 2) ? 2.6 : 3.8;
 
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
@@ -100,6 +103,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 crossAxisCount: columns,
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
+                childAspectRatio: tileAspect,
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 children: const [
@@ -148,12 +152,11 @@ class _DashboardPageState extends State<DashboardPage> {
                 ],
               ),
               const SizedBox(height: 16),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    flex: 3,
-                    child: _ChartCard(
+              if (width < 900)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _ChartCard(
                       title: 'Recent Incidents',
                       child: _IncidentsList(items: const [
                         MapEntry('P1 • Definite breach detected', 'Just now'),
@@ -164,11 +167,8 @@ class _DashboardPageState extends State<DashboardPage> {
                         MapEntry('P4 • Device posture warning', '4h ago'),
                       ]),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    flex: 2,
-                    child: _ChartCard(
+                    const SizedBox(height: 16),
+                    _ChartCard(
                       title: 'Active Alerts',
                       child: _ListPlaceholder(items: const [
                         MapEntry('P1 • Critical', '3'),
@@ -177,9 +177,41 @@ class _DashboardPageState extends State<DashboardPage> {
                         MapEntry('P4 • Low', '20'),
                       ]),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                )
+              else
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      flex: 3,
+                      child: _ChartCard(
+                        title: 'Recent Incidents',
+                        child: _IncidentsList(items: const [
+                          MapEntry('P1 • Definite breach detected', 'Just now'),
+                          MapEntry('P2 • MFA failed for locked user', '5m ago'),
+                          MapEntry('P3 • Window switching detected', '28m ago'),
+                          MapEntry('P2 • Typing pattern anomaly', '1h ago'),
+                          MapEntry('P3 • Geo-IP variance > 300km', '2h ago'),
+                          MapEntry('P4 • Device posture warning', '4h ago'),
+                        ]),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      flex: 2,
+                      child: _ChartCard(
+                        title: 'Active Alerts',
+                        child: _ListPlaceholder(items: const [
+                          MapEntry('P1 • Critical', '3'),
+                          MapEntry('P2 • High', '7'),
+                          MapEntry('P3 • Medium', '12'),
+                          MapEntry('P4 • Low', '20'),
+                        ]),
+                      ),
+                    ),
+                  ],
+                ),
               const SizedBox(height: 16),
               _ChartCard(
                 title: 'Quick actions',
@@ -250,7 +282,7 @@ class _StatusList extends StatelessWidget {
               color: it.value ? const Color(0xFF22C55E) : const Color(0xFFFF4D4F),
               size: 18,
             ),
-            title: Text(it.key),
+            title: Text(it.key, maxLines: 1, overflow: TextOverflow.ellipsis),
             trailing: Text(
               it.value ? 'Operational' : 'Degraded',
               style: const TextStyle(color: Colors.white70),
@@ -352,7 +384,7 @@ class _ListPlaceholder extends StatelessWidget {
             dense: true,
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.fiber_manual_record, size: 12, color: Colors.white54),
-            title: Text(e.key),
+            title: Text(e.key, maxLines: 1, overflow: TextOverflow.ellipsis),
             trailing: Text(e.value, style: const TextStyle(color: Colors.white70)),
           ),
       ],
